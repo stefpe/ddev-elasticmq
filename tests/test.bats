@@ -43,7 +43,7 @@ health_checks() {
   sleep 5
 
   # Check that the health endpoint responds
-  run curl -sf "http://${PROJNAME}.ddev.site:9324/health"
+  run curl -s -X GET "http://${PROJNAME}.ddev.site:9324/health"
   assert_success
   assert_output "OK"
 
