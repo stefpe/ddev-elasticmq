@@ -53,7 +53,7 @@ health_checks() {
   assert_output --partial "ListQueuesResponse"
 
   # Check that the UI is accessible
-  run curl -sfI "http://${PROJNAME}.ddev.site:9325"
+  run curl -sf "http://${PROJNAME}.ddev.site:9325"
   assert_success
   assert_output --partial "HTTP/1.1 200" || assert_output --partial "HTTP/2 200"
 }
