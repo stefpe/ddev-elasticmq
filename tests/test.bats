@@ -55,7 +55,7 @@ health_checks() {
   # Check that the UI is accessible
   run curl -sf "http://${PROJNAME}.ddev.site:9325"
   assert_success
-  assert_output --partial "HTTP/1.1 200" || assert_output --partial "HTTP/2 200"
+  assert_output --partial "ElasticMQ"
 }
 
 teardown() {
