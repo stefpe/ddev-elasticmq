@@ -2,14 +2,36 @@
 services:
   elasticmq:
     container_name: ddev-${DDEV_SITENAME}-elasticmq
-    image: ${ELASTICMQ_DOCKER_IMAGE:-ddev/ddev-utilities:latest}
-    command: tail -f /dev/null
-    restart: "no"
-    # These labels ensure this service is discoverable by DDEV.
+    image: ${ELASTICMQ_DOCKER_IMAGE:-softwaremill/elasticmq:latest}
+    restart: "unless-stopped"
+
+    # Expose ports for DDEV router
+    expose:
+      - "9324"
+      - "9325"
+
+    # These labels ensure this service is discoverable by DDEV
     labels:
       com.ddev.site-name: ${DDEV_SITENAME}
       com.ddev.approot: ${DDEV_APPROOT}
 
+    # Mount the configuration file
     volumes:
       - ".:/mnt/ddev_config"
       - "ddev-global-cache:/mnt/ddev-global-cache"
+      - "./elasticmq.conf:/opt/elasticmq.conf:ro"
+
+    # Health check to verify ElasticMQ is ready
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9324/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    environment:
+      - DDEV_SITENAME=${DDEV_SITENAME}
+      - DDEV_APPROOT=${DDEV_APPROOT}
+      - VIRTUAL_HOST=$DDEV_HOSTNAME
+      - HTTP_EXPOSE=9324:9324,9325:9325
+      - HTTPS_EXPOSE=9326:9324,9327:9325

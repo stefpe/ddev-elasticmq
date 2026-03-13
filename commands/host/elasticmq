@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## #ddev-generated
+## Description: Launch the ElasticMQ web UI
+## Usage: elasticmq
+## Example: ddev elasticmq
+
+# Detect the dynamic HTTPS port (9327) for the UI
+# Falls back to HTTP port (9325) if HTTPS is not available
+
+# Use HTTPS port 9327 (mapped to container's 9325)
+port=9327
+
+# Launch the browser with the detected port
+ddev launch :$port

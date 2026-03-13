@@ -39,17 +39,23 @@ setup() {
 }
 
 health_checks() {
-  # Do something useful here that verifies the add-on
+  # Wait for ElasticMQ to be ready
+  sleep 5
 
-  # You can check for specific information in headers:
-  # run curl -sfI https://${PROJNAME}.ddev.site
-  # assert_output --partial "HTTP/2 200"
-  # assert_output --partial "test_header"
-
-  # Or check if some command gives expected output:
-  DDEV_DEBUG=true run ddev launch
+  # Check that the health endpoint responds
+  run curl -sf "http://${PROJNAME}.ddev.site:9324/health"
   assert_success
-  assert_output --partial "FULLURL https://${PROJNAME}.ddev.site"
+  assert_output "OK"
+
+  # Check that the SQS API responds (list queues should return empty list)
+  run curl -sf "http://${PROJNAME}.ddev.site:9324/?Action=ListQueues"
+  assert_success
+  assert_output --partial "ListQueuesResponse"
+
+  # Check that the UI is accessible
+  run curl -sfI "http://${PROJNAME}.ddev.site:9325"
+  assert_success
+  assert_output --partial "HTTP/1.1 200" || assert_output --partial "HTTP/2 200"
 }
 
 teardown() {

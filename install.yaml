@@ -1,6 +1,93 @@
 name: elasticmq
 
+# Pre-install actions to set up the environment
+pre_install_actions:
+  # Create the elasticmq.conf configuration file if it doesn't exist
+  - |
+    #!/bin/bash
+    set -e
+    if [ ! -f .ddev/elasticmq.conf ]; then
+      echo "Creating .ddev/elasticmq.conf with default configuration..."
+      cat > .ddev/elasticmq.conf << 'EOF'
+# ElasticMQ Configuration File
+# This file is mounted to /opt/elasticmq.conf in the container
+# Documentation: https://github.com/softwaremill/elasticmq
+
+# Include the default application.conf from the classpath
+include classpath("application.conf")
+
+# Node address configuration
+# Setting host to "*" makes queue URLs use the incoming request path
+# which is useful for containerized deployments
+node-address {
+  protocol = http
+  host = "*"
+  port = 9324
+  context-path = ""
+}
+
+# REST SQS API configuration
+rest-sqs {
+  enabled = true
+  bind-port = 9324
+  bind-hostname = "0.0.0.0"
+  # Possible values: relaxed, strict
+  sqs-limits = strict
+}
+
+# REST Stats/UI configuration
+rest-stats {
+  enabled = true
+  bind-port = 9325
+  bind-hostname = "0.0.0.0"
+}
+
+# Queue definitions
+# Add your custom queues below. Queues are created automatically on startup.
+queues {
+  # Example: Standard queue with custom visibility timeout
+  # my-queue {
+  #   fifo = false
+  #   defaultVisibilityTimeout = 30 seconds
+  # }
+
+  # Example: FIFO queue
+  # "my-fifo-queue.fifo" {
+  #   fifo = true
+  #   contentBasedDeduplication = true
+  #   defaultVisibilityTimeout = 60 seconds
+  # }
+
+  # Example: Queue with dead letter queue
+  # main-queue {
+  #   defaultVisibilityTimeout = 30 seconds
+  #   deadLettersQueue {
+  #     name = "main-queue-dlq"
+  #     maxReceiveCount = 3
+  #   }
+  # }
+  # main-queue-dlq { }
+
+  # Example: Your custom queue
+  # admin-integration-development-messenger-transport {
+  #   fifo = false
+  #   contentBasedDeduplication = false
+  #   defaultVisibilityTimeout = 15 seconds
+  # }
+}
+
+# AWS region and account ID used in resource IDs
+aws {
+  region = us-west-2
+  accountId = 000000000000
+}
+EOF
+    fi
+
+# Files to be installed
 project_files:
   - docker-compose.elasticmq.yaml
+  - commands/host/elasticmq
 
-ddev_version_constraint: '>= v1.24.3'
+# DDEV version constraint
+ddev_version_constraint: ">= v1.24.3"
